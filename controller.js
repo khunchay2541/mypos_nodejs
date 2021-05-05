@@ -49,6 +49,36 @@ router.get('/product/:id', async (req, res)=>{
 });
 
 
+//delete
+router.delete('/product/:id',async (req, res)=>{  
+
+  //ด่านแรก query ก่อน
+  try {
+    const deleted = await db.Products.destroy({
+      where: {
+        id : req.params.id 
+      }
+    }); 
+
+    //กรณีไม่มีข้อมูล
+    if (!deleted){
+      return res.status(404).json({message: 'Product not found'})
+      //คำสั่ง return  มันจะไม่ exicute บรรทัดถัดไป
+    } else {
+      return res.status(204).json({message: 'Product deleted'})
+      // 204 success แต่ไม่มี content กลับไป
+    }
+
+    //ถ้ามีเข้า function
+    updateProduct(req, res, result)
+        
+  } catch (error) {
+    res.status(500).json({ message: error.message}) 
+  }
+
+});
+
+
 
 //-------------- POST  ------------------------------
 //insert
@@ -78,6 +108,75 @@ router.post('/product',(req, res)=>{
         }
       })
 });
+
+
+//put แก้ไข
+router.put('/product/:id',async (req, res)=>{  
+
+  //ด่านแรก query ก่อน
+  try {
+    const result = await db.Products.findOne({
+      where: {
+        id : req.params.id 
+      }
+    }); 
+
+    //กรณีไม่มีข้อมูล
+    if (!result){
+      return res.status(404).json({message: 'Product not found'})
+      //คำสั่ง return  มันจะไม่ exicute บรรทัดถัดไป
+    } 
+
+    //ถ้ามีเข้า function
+    updateProduct(req, res, result)
+        
+  } catch (error) {
+    res.status(500).json({ message: error.message}) 
+  }
+
+});
+
+
+function updateProduct(req, res, product){
+  //reuse โค้ด upload
+    upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      //console.log(`error: ${JSON.stringify(err)}`);
+      return res.status(500).json({ message: err}) 
+    } else if (err) {
+     // console.log(`error: ${JSON.stringify(err)}`);
+      return res.status(500).json({ message: err}) 
+    }
+    // const fileName = req.file ? req.file.fieldname : undefined
+
+    const data = {
+      ...req.body,
+      image: req.file ? req.file.filename : undefined
+    }
+
+    
+    try {
+      const [updated] = await db.Products.update(data, {
+        where: {
+          id: product.id
+        }
+      })
+
+
+      if(updated){
+        const updateProduct = await db.Products.findByPk(product.id)
+        res.status(200).json(updateProduct)
+
+      }else{
+        throw new Error('Product not found')
+      }
+
+    } catch (error) {
+      res.status(500).json({ message: error.message}) 
+    }
+  })
+}
+
 
 
 module.exports = router

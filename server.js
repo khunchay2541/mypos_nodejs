@@ -1,13 +1,17 @@
 const express = require('express') //require express จาก nodemodule มายัดตัวแปร express สรา้งเป็นค่าคงที่
+const cors = require('cors')
 const app = express() // new obj มาให้ตัว app อีกที //หลังจากนั้นตัวแปร app จะเป็นตัวจัดการให้แล้ว
 
-
+const corsOptions = {
+    origin: ['http://example.com', 'https://www.w3schools.com', 'http://localhost:4200'],
+    optionSuccessStatus: 200
+}
 
 //middle ware--------------------------------------------------------------------------------------
+app.use(cors()) //all
 app.use(express.json())
 app.use(express.urlencoded({ extended: false})) //x-www-form-urlencoded //ถ้าแบบ false จะเป็นแบบ  {key: value} 
 //แต่ถ้าแบบ true จะเป็นการสนใจ nested data structure คือการมี obj ซ้อน {xxx: {aaa:bbb}}
-
  app.use(require('./controller'))
 
  
